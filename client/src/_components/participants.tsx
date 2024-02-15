@@ -1,12 +1,19 @@
+import { UserType } from "@/components/interfaces";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useBeforeUnload } from "react-use";
+import { Socket } from "socket.io-client";
 
-const Participants = ({ socket, username }: any) => {
+interface ParticipantsProps {
+  socket: Socket;
+  username: string | undefined;
+}
+
+const Participants: React.FC<ParticipantsProps> = ({ socket, username }) => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserType[]>([]);
 
   const handleLeaveRoom = () => {
     socket.emit("leave_room", { username: username, room: "Demo" });
@@ -20,10 +27,13 @@ const Participants = ({ socket, username }: any) => {
   }, "You're leaving the page, you sure about that?");
 
   useEffect(() => {
-    socket.on("chatroom_users", (data: any) => {
+    const handleChatRoomUsers = (data: UserType[]) => {
       setUsers(data);
-    });
-    return () => socket.off("chatroom_users");
+    };
+    socket.on("chatroom_users", handleChatRoomUsers);
+    return () => {
+      socket.off("chatroom_users");
+    };
   }, [socket]);
 
   return (

@@ -5,8 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { MoveUpRight } from "lucide-react";
+import { Socket } from "socket.io-client";
 
-const Home = ({ socket }: any) => {
+interface HomeProps {
+  socket: Socket;
+}
+
+const Home: React.FC<HomeProps> = ({ socket }) => {
   const navigate = useNavigate();
   const [username, setUsername] = useState<string>("");
 
