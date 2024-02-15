@@ -1,34 +1,39 @@
-import ChatRoom from "@/_components/chatRoom";
-import Messages from "@/_components/messages";
-import SendMessage from "@/_components/sendMessage";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import { MoveUpRight } from "lucide-react";
 
 const Home = ({ socket }: any) => {
-  const [connected, setConnected] = useState<boolean>(false);
+  const navigate = useNavigate();
   const [username, setUsername] = useState<string>("");
-  // const [room, setRoom] = useState<string>("DemoRoom");
 
-  useEffect(() => {
-    if (username) setConnected(true);
-  }, [username]);
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") connectToRoom();
+  };
+
+  const connectToRoom = () => {
+    socket.emit("join_room", { username: username, room: "Demo" });
+    navigate(`/chat/${username}`);
+  };
 
   return (
     <>
-      <div className="flex gap-2 h-full w-full p-6">
-        <div className="w-1/4 p-2">
-          <ChatRoom socket={socket} setUsername={setUsername} />
+      <div className="h-full w-full flex justify-center items-center">
+        <div className="flex flex-col gap-2">
+          <Input
+            placeholder="Enter your username"
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={handleKeyPress}
+          />
+          <Input disabled={true} placeholder="Demo" />
+          <Button onClick={connectToRoom} className="flex gap-2">
+            <p>Start Chatting</p>
+            <MoveUpRight className="h-4 w-4" />
+          </Button>
         </div>
-
-        {connected ? (
-          <div className="flex flex-col justify-between w-full p-2">
-            <Messages socket={socket} />
-            <SendMessage socket={socket} username={username} room={"Demo"} />
-          </div>
-        ) : (
-          <div className="h-full w-full flex justify-center items-center bg-zinc-900 rounded-md">
-            <p>Please select a room </p>
-          </div>
-        )}
       </div>
     </>
   );

@@ -1,15 +1,10 @@
-import { ThemeProvider } from "@/components/theme-provider";
 import Home from "./pages/home";
-import io from "socket.io-client";
+// import io from "socket.io-client";
 
-const socket = io("http://localhost:3001");
+// const socket = io("http://localhost:3001");
 
-function App() {
-  return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <Home socket={socket} />
-    </ThemeProvider>
-  );
+function App({ socket }: any) {
+  return <Home socket={socket} />;
 }
 
 export default App;
