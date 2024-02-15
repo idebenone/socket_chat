@@ -3,13 +3,19 @@ import Participants from "@/_components/participants";
 import SendMessage from "@/_components/sendMessage";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Socket } from "socket.io-client";
+import { MessageType } from "@/components/interfaces";
 
-const Chat = ({ socket }: any) => {
+interface ChatProps {
+  socket: Socket;
+}
+
+const Chat: React.FC<ChatProps> = ({ socket }) => {
   let { username } = useParams();
-  const [messagesReceived, setMessageReceived] = useState<any[]>([]);
+  const [messagesReceived, setMessageReceived] = useState<MessageType[]>([]);
 
   useEffect(() => {
-    socket.on("receive_message", (data: any) => {
+    const handleReceiveMessage = (data: MessageType) => {
       setMessageReceived((state) => [
         ...state,
         {
@@ -18,9 +24,11 @@ const Chat = ({ socket }: any) => {
           __createdtime__: data.__createdtime__,
         },
       ]);
-    });
-
-    return () => socket.off("receive_message");
+    };
+    socket.on("receive_message", handleReceiveMessage);
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+    };
   }, [socket]);
 
   return (
@@ -31,11 +39,7 @@ const Chat = ({ socket }: any) => {
             <Participants socket={socket} username={username} />
           </div>
           <div className="flex flex-col justify-between w-full p-2 relative">
-            <Messages
-              socket={socket}
-              username={username}
-              messagesReceived={messagesReceived}
-            />
+            <Messages username={username} messagesReceived={messagesReceived} />
             <SendMessage socket={socket} username={username} room={"Demo"} />
           </div>
         </div>

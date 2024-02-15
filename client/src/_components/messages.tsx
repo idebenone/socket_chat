@@ -1,6 +1,12 @@
+import { MessageType } from "@/components/interfaces";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const Messages = ({ username, messagesReceived }: any) => {
+interface MessageProps {
+  username: string | undefined;
+  messagesReceived: MessageType[];
+}
+
+const Messages: React.FC<MessageProps> = ({ username, messagesReceived }) => {
   return (
     <>
       <ScrollArea className="pe-6 pb-12">

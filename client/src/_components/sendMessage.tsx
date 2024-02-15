@@ -2,9 +2,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 import { useState } from "react";
+import { Socket } from "socket.io-client";
 
-const SendMessage = ({ socket, username, room }: any) => {
-  const [message, setMessage] = useState("");
+interface SendMessageProps {
+  socket: Socket;
+  username: string | undefined;
+  room: string | "Demo";
+}
+
+const SendMessage: React.FC<SendMessageProps> = ({
+  socket,
+  username,
+  room,
+}) => {
+  const [message, setMessage] = useState<string>("");
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
     if (event.key === "Enter") sendMessage();
