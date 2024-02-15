@@ -1,29 +1,11 @@
-import { useEffect, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-const Messages = ({ socket, username }: any) => {
-  const [messagesReceived, setMessageReceived] = useState<any[]>([]);
-
-  useEffect(() => {
-    socket.on("receive_message", (data: any) => {
-      setMessageReceived((state) => [
-        ...state,
-        {
-          message: data.message,
-          username: data.username,
-          __createdtime__: data.__createdtime__,
-        },
-      ]);
-    });
-
-    return () => socket.off("receive_message");
-  }, [socket]);
-
+const Messages = ({ username, messagesReceived }: any) => {
   return (
     <>
       <ScrollArea className="pe-6 pb-12">
         <div className="flex flex-col gap-4">
-          {messagesReceived.map((msg, i) => (
+          {messagesReceived.map((msg: any, i: any) => (
             <div
               key={i}
               className={`flex flex-col gap-1 ${
