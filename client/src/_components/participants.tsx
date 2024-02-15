@@ -10,12 +10,13 @@ const Participants = ({ socket, username }: any) => {
 
   const handleLeaveRoom = () => {
     socket.emit("leave_room", { username: username, room: "Demo" });
-    navigate("/");
+    localStorage.removeItem("session");
+    navigate("/", { replace: true });
   };
 
-  useBeforeUnload(function () {
+  useBeforeUnload(() => {
     handleLeaveRoom();
-    return true;
+    return false;
   }, "You're leaving the page, you sure about that?");
 
   useEffect(() => {
