@@ -34,7 +34,11 @@ const Home: React.FC<HomeProps> = ({ socket }) => {
             onKeyDown={handleKeyPress}
           />
           <Input disabled={true} placeholder="Demo" />
-          <Button onClick={connectToRoom} className="flex gap-2">
+          <Button
+            onClick={connectToRoom}
+            className="flex gap-2"
+            disabled={!username}
+          >
             <p>Start Chatting</p>
             <MoveUpRight className="h-4 w-4" />
           </Button>
