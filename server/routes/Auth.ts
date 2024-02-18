@@ -12,7 +12,6 @@ const auth = Router();
 
 auth.post("/login", async (req: Request, res: Response) => {
     const { username, password } = req.body;
-    console.log(req.body);
     if (!username || !password) res.status(422).json({ message: "Some parameters are missing" })
     try {
         const user: any = await User.find({ username }).exec();
