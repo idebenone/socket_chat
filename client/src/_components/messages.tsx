@@ -1,4 +1,4 @@
-import { MessageType } from "@/components/interfaces";
+import { MessageType } from "@/lib/interfaces";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MessageProps {

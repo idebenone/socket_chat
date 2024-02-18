@@ -37,7 +37,7 @@ const SendMessage: React.FC<SendMessageProps> = ({
           value={message}
           onKeyDown={handleKeyPress}
         />
-        <Button onClick={sendMessage}>
+        <Button onClick={sendMessage} className="flex gap-2">
           <p>Send</p>
           <Send className="h-4 w-4" />
         </Button>

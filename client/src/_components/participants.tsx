@@ -1,5 +1,6 @@
-import { UserType } from "@/components/interfaces";
+import { UserType } from "@/lib/interfaces";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@radix-ui/react-separator";
 import { LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -40,9 +41,12 @@ const Participants: React.FC<ParticipantsProps> = ({ socket, username }) => {
     <>
       <div className="flex flex-col justify-between h-full">
         <div>
-          <p className="capitalize text-lg font-semibold">Participants</p>
+          <p className="capitalize text-lg font-semibold mb-2 text-muted-foreground">
+            Participants
+          </p>
           {users.map((user, i) => (
-            <div key={i}>
+            <div key={i} className="flex gap-3 items-center">
+              <p className="h-2 w-2 bg-green-500 rounded"></p>
               <p className="mb-1">{user.username}</p>
             </div>
           ))}
