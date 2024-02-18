@@ -1,4 +1,4 @@
-import { UserType } from "@/components/interfaces";
+import { UserType } from "@/lib/interfaces";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@radix-ui/react-separator";
 import { LogOut } from "lucide-react";

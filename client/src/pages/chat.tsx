@@ -4,7 +4,7 @@ import SendMessage from "@/_components/sendMessage";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Socket } from "socket.io-client";
-import { MessageType } from "@/components/interfaces";
+import { MessageType } from "@/lib/interfaces";
 import { Separator } from "@/components/ui/separator";
 
 interface ChatProps {
