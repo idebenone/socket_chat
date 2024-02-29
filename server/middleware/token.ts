@@ -3,9 +3,11 @@ import jwt from 'jsonwebtoken'
 
 import User from '../models/User'
 
+import response from "../utilities/response";
+
 export const validate = async (req: Request, res: Response, next: NextFunction) => {
     var token = req.headers["x-access-token"]
-    if (!token) res.status(401).json({ message: "Un Auhtorized!" })
+    if (!token) return res.status(401).json(response.UN_AUTHORIZED)
     try {
         const decoded: any = jwt.verify(token as string, process.env.SECRET_KEY_AUTH || '')
         const user: any = await User.findById({ _id: decoded.user_id }).exec()
@@ -22,9 +24,10 @@ export const validate = async (req: Request, res: Response, next: NextFunction) 
             );
             next()
         } else {
-            res.status(401).json({ message: "Un Auhtorized!" })
+            return res.status(401).json(response.UN_AUTHORIZED)
         }
     } catch (error) {
-        res.status(501).json({ message: "Something went wrong" })
+        console.log(error)
+        res.status(501).json(response.SYSTEM_ERROR)
     }
 }

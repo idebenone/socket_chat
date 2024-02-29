@@ -1,12 +1,18 @@
 import { Router, Request, Response } from 'express';
+import { Types } from 'mongoose';
+
 import { validate } from "../middleware/token";
+
 import User from '../models/User';
 import Follower from "../models/Follower";
-import response from "../utilities/response";
-import { Types } from 'mongoose';
-const user = Router();
 
-user.get("/profile", validate, async (req: Request, res: Response) => {
+import response from "../utilities/response";
+import Conversations from '../models/Conversations';
+
+const user = Router();
+user.use(validate);
+
+user.get("/profile", async (req: Request, res: Response) => {
     try {
         const user: any = await User.findOne({ _id: res.locals.user_id })
         if (user) return res.status(201).json(response.OK(user));
@@ -16,7 +22,7 @@ user.get("/profile", validate, async (req: Request, res: Response) => {
     }
 })
 
-user.post("/follow/:id", validate, async (req: Request, res: Response) => {
+user.get("/follow/:id", async (req: Request, res: Response) => {
     const currentUserId = res.locals.user_id0
     const userToFollowId = req.params.id;
     if (!currentUserId || !userToFollowId) return res.status(422).json(response.MISSING);
@@ -43,7 +49,7 @@ user.post("/follow/:id", validate, async (req: Request, res: Response) => {
     }
 })
 
-user.post("/unfollow/:id", validate, async (req: Request, res: Response) => {
+user.get("/unfollow/:id", async (req: Request, res: Response) => {
     const currentUserId = res.locals.user_id;
     const userToUnFollowId = req.params.id;
     if (!currentUserId || !userToUnFollowId) return res.status(422).json(response.MISSING);
@@ -65,7 +71,7 @@ user.post("/unfollow/:id", validate, async (req: Request, res: Response) => {
     }
 })
 
-user.get("/search", validate, async (req: Request, res: Response) => {
+user.get("/search", async (req: Request, res: Response) => {
     const { query } = req.query;
     try {
         if (typeof query !== 'string' || query.trim() === '') return res.status(400).json(response.MISSING);
@@ -78,4 +84,31 @@ user.get("/search", validate, async (req: Request, res: Response) => {
         return res.status(500).json(response.SYSTEM_ERROR);
     }
 });
+
+user.get("/recents", async (req: Request, res: Response) => {
+    try {
+        const conversations = await Conversations.find({
+            participants: res.locals.user_id
+        }).populate('participants', 'username')
+            .populate({
+                path: 'lastMessage',
+                select: 'text createdAt',
+                populate: {
+                    path: 'user',
+                    model: 'User',
+                    select: 'username profile_img',
+                },
+            })
+            .sort({ 'updatedAt': -1 });
+
+        if (conversations.length !== 0) {
+            return res.status(200).json(response.OK(conversations));
+        }
+        return res.status(404).json(response.NOT_FOUND);
+    } catch (error) {
+        return res.status(500).json(response.SYSTEM_ERROR);
+    }
+})
+
+export default user;
 

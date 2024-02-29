@@ -1,50 +1,78 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import io from "socket.io-client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { LogOut, Search } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
+import { PersonIcon } from "@radix-ui/react-icons";
 
-import { MoveUpRight } from "lucide-react";
-import { Socket } from "socket.io-client";
+import ProfileDialog from "@/components/profileDialog";
+import SearchDialog from "@/components/searchDialog";
+import Chat from "@/components/chat";
 
-interface HomeProps {
-  socket: Socket;
-}
+import { removeToken } from "@/components/api/auth";
+import { useDispatch } from "react-redux";
+import { setSocket } from "@/store/socketSlice";
 
-const Home: React.FC<HomeProps> = ({ socket }) => {
+const socket = io("http://localhost:3001");
+
+const Home = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [username, setUsername] = useState<string>("");
+  const { user } = useParams();
 
-  const handleKeyPress = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter") connectToRoom();
+  const [profileDialogState, setProfileDialogState] = useState<boolean>(false);
+  const [searchDialogState, setSearchDialogState] = useState<boolean>(false);
+
+  const handleLogout = () => {
+    removeToken();
+    navigate("/login");
   };
 
-  const connectToRoom = () => {
-    socket.emit("join_room", { username: username, room: "Demo" });
-    navigate(`/chat/${username}`);
-  };
+  useEffect(() => {
+    dispatch(setSocket({ socket }));
+  }, []);
 
   return (
-    <>
-      <div className="h-full w-full flex justify-center items-center">
-        <div className="flex flex-col gap-2">
-          <Input
-            placeholder="Enter your username"
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyDown={handleKeyPress}
-          />
-          <Input disabled={true} placeholder="Demo" />
-          <Button
-            onClick={connectToRoom}
-            className="flex gap-2"
-            disabled={!username}
+    <div className="w-full h-full">
+      <div className="w-full flex justify-between items-center">
+        <span
+          className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50"
+          onClick={() => setSearchDialogState(true)}
+        >
+          <Search className="h-4 w-4" />
+        </span>
+
+        <div className="flex gap-2 items-center">
+          <ModeToggle />
+          <span
+            className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50"
+            onClick={() => setProfileDialogState(true)}
           >
-            <p>Start Chatting</p>
-            <MoveUpRight className="h-4 w-4" />
-          </Button>
+            <PersonIcon className="h-4 w-4" />
+          </span>
+          <span
+            className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4" />
+          </span>
         </div>
       </div>
-    </>
+
+      <div className="mt-4 h-full">
+        <Chat user={user} />
+      </div>
+
+      <ProfileDialog
+        dialogState={profileDialogState}
+        setDialogState={() => setProfileDialogState(false)}
+      />
+      <SearchDialog
+        dialogState={searchDialogState}
+        setDialogState={() => setSearchDialogState(false)}
+      />
+    </div>
   );
 };
 

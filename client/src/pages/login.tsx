@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,7 +13,8 @@ import { Eye, LogIn } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { loginApi } from "@/components/api/auth";
+import { getToken, loginApi, setToken } from "@/components/api/auth";
+import { Link, useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   username: z.string().min(2).max(50),
@@ -21,6 +22,8 @@ const formSchema = z.object({
 });
 
 const Login = () => {
+  const navigate = useNavigate();
+
   const [visible, setVisible] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -32,8 +35,19 @@ const Login = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const data = await loginApi(values);
+    await loginApi(values)
+      .then((response) => {
+        if (response.status === 200 || response.status === 201) {
+          setToken(response.data.data);
+          navigate("/");
+        }
+      })
+      .catch((error) => console.log(error));
   };
+
+  useEffect(() => {
+    if (getToken()) navigate("/");
+  }, []);
 
   return (
     <div className="flex justify-center items-center w-full h-full">
@@ -93,6 +107,13 @@ const Login = () => {
             <p>Login</p>
             <LogIn className="h-4 w-4" />
           </Button>
+
+          <small className="text-center text-muted-foreground">
+            I'm
+            <Link to="/register" className="text-blue-600">
+              &nbsp;New!
+            </Link>
+          </small>
         </form>
       </Form>
     </div>

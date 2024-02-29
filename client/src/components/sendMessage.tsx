@@ -2,19 +2,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 import { useState } from "react";
-import { Socket } from "socket.io-client";
+import { sendChat } from "./api/socket";
+import { getUserId } from "./api/auth";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 interface SendMessageProps {
-  socket: Socket;
-  username: string | undefined;
-  room: string | "Demo";
+  user: string | "";
 }
 
-const SendMessage: React.FC<SendMessageProps> = ({
-  socket,
-  username,
-  room,
-}) => {
+const SendMessage: React.FC<SendMessageProps> = ({ user }) => {
+  const store = useSelector((state: RootState) => state);
   const [message, setMessage] = useState<string>("");
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
@@ -22,9 +20,15 @@ const SendMessage: React.FC<SendMessageProps> = ({
   };
 
   const sendMessage = () => {
-    if (message !== "") {
-      const __createdtime__ = Date.now();
-      socket.emit("send_message", { message, username, room, __createdtime__ });
+    if (message !== "" && store.socket.socket) {
+      sendChat({
+        socket: store.socket.socket,
+        message,
+        senderId: getUserId(),
+        receiverId: user,
+        parent: "",
+        room: store.room.id,
+      });
       setMessage("");
     }
   };

@@ -1,5 +1,5 @@
 const response = {
-    "OK": (data) => {
+    "OK": (data: any) => {
         return {
             error_status: false,
             status: 200,
