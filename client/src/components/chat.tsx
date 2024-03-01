@@ -13,43 +13,54 @@ import Recents from "./recents";
 import SendMessage from "./sendMessage";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getProfileApi } from "./api/user";
+import { Info, PhoneCall, VideoIcon } from "lucide-react";
 
 interface ChatProps {
   user: string | undefined;
 }
 
 const Chat: React.FC<ChatProps> = ({ user }) => {
-  const store = useSelector((state: RootState) => state);
+  const { socket, directParticipants } = useSelector(
+    (state: RootState) => state
+  );
   const dispatch = useDispatch();
+  const [userProfile, setUserProfile] = useState<any>({});
   const [messages, setMessages] = useState<MessageType[]>([]);
 
   const handleMessages = async () => {
     await getMessageApi({
-      senderId: store.directParticipants.senderId,
-      receiverId: store.directParticipants.receiverId,
+      senderId: directParticipants.senderId,
+      receiverId: directParticipants.receiverId,
     }).then((response) => {
       if (response.status === 200 || response.status === 201) {
         setMessages(response.data.data);
       }
-      console.log(response.data.data);
       let room = response.data.data[0].room
         ? response.data.data[0].room
-        : `dm-${store.directParticipants.senderId}-${store.directParticipants.receiverId}`;
+        : `dm-${directParticipants.senderId}-${directParticipants.receiverId}`;
       dispatch(setRoom({ id: room }));
 
-      if (store.socket.socket)
+      if (socket.socket)
         startChat({
-          socket: store.socket.socket,
+          socket: socket.socket,
           room,
         });
     });
   };
 
+  const handleUserProfile = async () => {
+    if (user)
+      await getProfileApi(user)
+        .then((response) => setUserProfile(response.data.data))
+        .catch((error) => console.log(error));
+  };
   useEffect(() => {
     if (user) {
       handleMessages();
+      handleUserProfile();
     }
-  }, [store.directParticipants]);
+  }, [directParticipants]);
 
   useEffect(() => {
     const handleReceiveMessage = (data: MessageType) => {
@@ -66,13 +77,12 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
         },
       ]);
     };
-    if (store.socket.socket)
-      store.socket.socket.on("receive_chat", handleReceiveMessage);
+    if (socket.socket) socket.socket.on("receive_chat", handleReceiveMessage);
     return () => {
-      if (store.socket.socket)
-        store.socket.socket.off("receive_chat", handleReceiveMessage);
+      if (socket.socket)
+        socket.socket.off("receive_chat", handleReceiveMessage);
     };
-  }, [store.socket]);
+  }, [socket]);
 
   return (
     <div className="flex gap-6 h-[700px]">
@@ -81,6 +91,30 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
       </div>
 
       <div className="w-full p-4 rounded-sm dark:bg-neutral-950 bg-neutral-100 relative">
+        <div className="absolute top-0 left-0 border-b border-muted p-2 w-full z-10 backdrop-blur-sm">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm">{userProfile.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {userProfile.username}
+              </p>
+            </div>
+
+            <div className="flex gap-2">
+              <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
+                <PhoneCall className="h-4 w-4" />
+              </span>
+
+              <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
+                <VideoIcon className="h-4 w-4" />
+              </span>
+
+              <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
+                <Info className="h-4 w-4" />
+              </span>
+            </div>
+          </div>
+        </div>
         {user ? (
           <>
             <ScrollArea className="h-[620px] w-full pe-4">
@@ -91,7 +125,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
                       key={index}
                       className={
                         message.participants[0].user ===
-                        store.directParticipants.senderId
+                        directParticipants.senderId
                           ? `flex justify-end`
                           : `flex justify-start`
                       }
@@ -99,9 +133,9 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
                       <p
                         className={
                           message.participants[0].user ===
-                          store.directParticipants.senderId
-                            ? `bg-blue-500 text-right py-2 px-4 rounded-sm w-fit`
-                            : `bg-neutral-800 py-2 px-4 rounded-sm w-fit`
+                          directParticipants.senderId
+                            ? `bg-blue-500 text-right py-2 px-3 rounded-3xl w-fit text-sm`
+                            : `bg-neutral-800 py-2 px-3 rounded-3xl w-fit text-sm`
                         }
                       >
                         {message.message}
@@ -110,7 +144,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
                   ))}
               </div>
             </ScrollArea>
-            <SendMessage user={user} />
+            <SendMessage />
           </>
         ) : (
           <p className="text-center font-bold">

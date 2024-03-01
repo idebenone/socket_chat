@@ -7,7 +7,7 @@ export const setToken = (data: { token: string, id: string }) => {
     localStorage.setItem("_id", data.id);
 }
 
-export const removeToken = (): void => { localStorage.removeItem("token"); }
+export const removeToken = (): void => { localStorage.removeItem("token"); localStorage.removeItem("_id") }
 
 export const getUserId = (): string => { return localStorage.getItem("_id") || "" }
 

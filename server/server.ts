@@ -37,8 +37,11 @@ mongoose.connect(DB_URI, options).then(() => {
 })
 
 io.on("connection", (socket) => {
-    socket.on("notifications", (data) => {
+    let query = socket.handshake.query;
 
+    socket.on(`send-notifications-${query.user}`, (data) => {
+        console.log(`Notification emitted by ${query.user} to ${data.user}`);
+        io.emit(`receive-notifications-${data.user}`, data);
     })
 
     socket.on('start_chat', (data) => {
@@ -47,7 +50,7 @@ io.on("connection", (socket) => {
     })
 
     socket.on("send_chat", async (data) => {
-        const { message, senderId, receiverId, room, parent, created_at, modified_at } = data;
+        const { message, senderId, receiverId, room, parent } = data;
         let newMessage = {
             message: data.message,
             participants: [{ user: data.senderId }, { user: data.receiverId }],
@@ -55,7 +58,6 @@ io.on("connection", (socket) => {
             parent: data.parent,
             created_at: new Date().toISOString(),
             modified_at: new Date().toISOString()
-
         }
         await saveMessage({ senderId, receiverId, room, message, parent });
         io.in(room).emit('receive_chat', newMessage);

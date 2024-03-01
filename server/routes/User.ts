@@ -12,9 +12,10 @@ import Conversations from '../models/Conversations';
 const user = Router();
 user.use(validate);
 
-user.get("/profile", async (req: Request, res: Response) => {
+user.get("/profile/:id", async (req: Request, res: Response) => {
+    const id = req.params.id;
     try {
-        const user: any = await User.findOne({ _id: res.locals.user_id })
+        const user: any = await User.findOne({ _id: id }).select('-password -is_verified -otp -created_at -modified_at');
         if (user) return res.status(201).json(response.OK(user));
         return res.status(404).json(response.NOT_FOUND);
     } catch (error) {

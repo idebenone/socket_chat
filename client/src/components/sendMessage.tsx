@@ -2,17 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 import { useState } from "react";
-import { sendChat } from "./api/socket";
-import { getUserId } from "./api/auth";
+import { sendChat, sendNotification } from "./api/socket";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 
-interface SendMessageProps {
-  user: string | "";
-}
-
-const SendMessage: React.FC<SendMessageProps> = ({ user }) => {
-  const store = useSelector((state: RootState) => state);
+const SendMessage = () => {
+  const { socket, directParticipants, room } = useSelector(
+    (state: RootState) => state
+  );
   const [message, setMessage] = useState<string>("");
 
   const handleKeyPress = (event: React.KeyboardEvent) => {
@@ -20,14 +17,21 @@ const SendMessage: React.FC<SendMessageProps> = ({ user }) => {
   };
 
   const sendMessage = () => {
-    if (message !== "" && store.socket.socket) {
+    if (message !== "" && socket.socket) {
       sendChat({
-        socket: store.socket.socket,
+        socket: socket.socket,
         message,
-        senderId: getUserId(),
-        receiverId: user,
+        senderId: directParticipants.senderId,
+        receiverId: directParticipants.receiverId,
         parent: "",
-        room: store.room.id,
+        room: room.id,
+      });
+      sendNotification({
+        socket: socket.socket,
+        senderId: directParticipants.senderId,
+        user: directParticipants.receiverId,
+        message: `${directParticipants.senderId} sent you a message`,
+        type: "Message",
       });
       setMessage("");
     }

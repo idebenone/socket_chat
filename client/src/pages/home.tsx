@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
 
 import { LogOut, Search } from "lucide-react";
-import { ModeToggle } from "@/components/mode-toggle";
 import { PersonIcon } from "@radix-ui/react-icons";
+import { useToast } from "@/components/ui/use-toast";
 
+import { ModeToggle } from "@/components/mode-toggle";
 import ProfileDialog from "@/components/profileDialog";
 import SearchDialog from "@/components/searchDialog";
 import Chat from "@/components/chat";
 
-import { removeToken } from "@/components/api/auth";
-import { useDispatch } from "react-redux";
+import { getUserId, removeToken } from "@/components/api/auth";
 import { setSocket } from "@/store/socketSlice";
-
-const socket = io("http://localhost:3001");
+import { RootState } from "@/store/store";
+import { NotificationType } from "@/lib/interfaces";
 
 const Home = () => {
+  const { socket } = useSelector((state: RootState) => state);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useParams();
+  const { toast } = useToast();
 
   const [profileDialogState, setProfileDialogState] = useState<boolean>(false);
   const [searchDialogState, setSearchDialogState] = useState<boolean>(false);
@@ -30,8 +33,35 @@ const Home = () => {
   };
 
   useEffect(() => {
+    const socket = io("http://localhost:3001", {
+      query: { user: getUserId() },
+    });
     dispatch(setSocket({ socket }));
   }, []);
+
+  useEffect(() => {
+    const handleReceiveNotifications = (data: NotificationType) => {
+      console.log(data);
+      toast({
+        title: "Message",
+        description: data.message,
+      });
+    };
+
+    if (socket.socket)
+      socket.socket.on(
+        `receive-notifications-${getUserId()}`,
+        handleReceiveNotifications
+      );
+
+    return () => {
+      if (socket.socket)
+        socket.socket.off(
+          `receive-notifications-${getUserId()}`,
+          handleReceiveNotifications
+        );
+    };
+  }, [socket]);
 
   return (
     <div className="w-full h-full">

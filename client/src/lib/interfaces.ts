@@ -7,6 +7,12 @@ export interface MessageType {
   modified_at: Date;
 }
 
+export interface NotificationType {
+  user: string
+  type: string,
+  message: string,
+}
+
 export interface UserType {
   id: string;
   username: string;
