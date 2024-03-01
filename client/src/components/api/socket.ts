@@ -8,6 +8,6 @@ export const sendChat = (data: { socket: Socket, message: string, senderId: stri
     data.socket.emit("send_chat", { message: data.message, senderId: data.senderId, receiverId: data.receiverId, parent: data.parent, room: data.room });
 }
 
-export const sendNotification = (data: { socket: Socket, senderId: string, user: string, type: string, message: string }) => {
-    data.socket.emit(`send-notifications-${data.senderId}`, { user: data.user, type: data.type, message: data.message });
+export const sendNotification = (data: { socket: Socket, sender: string, receiver: string, username: string, name: string, type: string, description: string, message: string }) => {
+    data.socket.emit(`send-notifications-${data.sender}`, { receiver: data.receiver, username: data.username, name: data.name, type: data.type, description: data.description, message: data.message });
 } 

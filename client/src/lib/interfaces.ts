@@ -8,8 +8,11 @@ export interface MessageType {
 }
 
 export interface NotificationType {
-  user: string
+  sender: string
+  username: string,
+  name: string,
   type: string,
+  description: string,
   message: string,
 }
 

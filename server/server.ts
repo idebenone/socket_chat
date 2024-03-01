@@ -40,8 +40,8 @@ io.on("connection", (socket) => {
     let query = socket.handshake.query;
 
     socket.on(`send-notifications-${query.user}`, (data) => {
-        console.log(`Notification emitted by ${query.user} to ${data.user}`);
-        io.emit(`receive-notifications-${data.user}`, data);
+        console.log(`Notification emitted by ${query.user} to ${data.receiver}`);
+        io.emit(`receive-notifications-${data.receiver}`, data);
     })
 
     socket.on('start_chat', (data) => {

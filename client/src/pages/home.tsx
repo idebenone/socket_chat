@@ -16,6 +16,8 @@ import { getUserId, removeToken } from "@/components/api/auth";
 import { setSocket } from "@/store/socketSlice";
 import { RootState } from "@/store/store";
 import { NotificationType } from "@/lib/interfaces";
+import { getProfileApi } from "@/components/api/user";
+import { setUser } from "@/store/userSlice";
 
 const Home = () => {
   const { socket } = useSelector((state: RootState) => state);
@@ -32,22 +34,35 @@ const Home = () => {
     navigate("/login");
   };
 
-  useEffect(() => {
+  const handleReceiveNotifications = (data: NotificationType) => {
+    toast({
+      title: `Message from ${data.name}`,
+      description: data.message,
+    });
+  };
+
+  const handleSocketConnection = () => {
     const socket = io("http://localhost:3001", {
       query: { user: getUserId() },
     });
     dispatch(setSocket({ socket }));
+  };
+
+  const handleUserProfile = async () => {
+    await getProfileApi(getUserId())
+      .then((response) => {
+        if (response.status === 200 || response.status === 201)
+          dispatch(setUser(response.data.data));
+      })
+      .catch((error) => console.log(error));
+  };
+
+  useEffect(() => {
+    handleSocketConnection();
+    handleUserProfile();
   }, []);
 
   useEffect(() => {
-    const handleReceiveNotifications = (data: NotificationType) => {
-      console.log(data);
-      toast({
-        title: "Message",
-        description: data.message,
-      });
-    };
-
     if (socket.socket)
       socket.socket.on(
         `receive-notifications-${getUserId()}`,

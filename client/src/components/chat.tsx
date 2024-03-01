@@ -24,21 +24,24 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   const { socket, directParticipants } = useSelector(
     (state: RootState) => state
   );
+
   const dispatch = useDispatch();
+
   const [userProfile, setUserProfile] = useState<any>({});
   const [messages, setMessages] = useState<MessageType[]>([]);
 
   const handleMessages = async () => {
     await getMessageApi({
-      senderId: directParticipants.senderId,
-      receiverId: directParticipants.receiverId,
+      senderId: directParticipants.sender.id,
+      receiverId: directParticipants.receiver.id,
     }).then((response) => {
       if (response.status === 200 || response.status === 201) {
         setMessages(response.data.data);
       }
+
       let room = response.data.data[0].room
         ? response.data.data[0].room
-        : `dm-${directParticipants.senderId}-${directParticipants.receiverId}`;
+        : `dm-${directParticipants.sender.id}-${directParticipants.receiver.id}`;
       dispatch(setRoom({ id: room }));
 
       if (socket.socket)
@@ -55,6 +58,22 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
         .then((response) => setUserProfile(response.data.data))
         .catch((error) => console.log(error));
   };
+
+  const handleReceiveMessage = (data: MessageType) => {
+    console.log(data);
+    setMessages((state) => [
+      ...state,
+      {
+        message: data.message,
+        participants: data.participants,
+        room: data.room,
+        parent: data.parent,
+        created_at: data.created_at,
+        modified_at: data.modified_at,
+      },
+    ]);
+  };
+
   useEffect(() => {
     if (user) {
       handleMessages();
@@ -63,20 +82,6 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   }, [directParticipants]);
 
   useEffect(() => {
-    const handleReceiveMessage = (data: MessageType) => {
-      console.log(data);
-      setMessages((state) => [
-        ...state,
-        {
-          message: data.message,
-          participants: data.participants,
-          room: data.room,
-          parent: data.parent,
-          created_at: data.created_at,
-          modified_at: data.modified_at,
-        },
-      ]);
-    };
     if (socket.socket) socket.socket.on("receive_chat", handleReceiveMessage);
     return () => {
       if (socket.socket)
@@ -125,7 +130,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
                       key={index}
                       className={
                         message.participants[0].user ===
-                        directParticipants.senderId
+                        directParticipants.sender.id
                           ? `flex justify-end`
                           : `flex justify-start`
                       }
@@ -133,7 +138,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
                       <p
                         className={
                           message.participants[0].user ===
-                          directParticipants.senderId
+                          directParticipants.sender.id
                             ? `bg-blue-500 text-right py-2 px-3 rounded-3xl w-fit text-sm`
                             : `bg-neutral-800 py-2 px-3 rounded-3xl w-fit text-sm`
                         }

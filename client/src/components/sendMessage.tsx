@@ -21,17 +21,20 @@ const SendMessage = () => {
       sendChat({
         socket: socket.socket,
         message,
-        senderId: directParticipants.senderId,
-        receiverId: directParticipants.receiverId,
+        senderId: directParticipants.sender.id,
+        receiverId: directParticipants.receiver.id,
         parent: "",
         room: room.id,
       });
       sendNotification({
         socket: socket.socket,
-        senderId: directParticipants.senderId,
-        user: directParticipants.receiverId,
-        message: `${directParticipants.senderId} sent you a message`,
+        receiver: directParticipants.receiver.id,
+        sender: directParticipants.sender.id,
+        username: directParticipants.sender.username,
+        name: directParticipants.sender.name,
         type: "Message",
+        description: `${directParticipants.sender.username} sent you a message`,
+        message,
       });
       setMessage("");
     }

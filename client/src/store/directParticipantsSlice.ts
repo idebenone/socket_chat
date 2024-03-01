@@ -1,16 +1,25 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface DirectParticipantsInterface {
-    senderId: string,
-    receiverId: string,
+    sender: {
+        id: string,
+        username: string,
+        name: string,
+    },
+    receiver: {
+        id: string,
+        username: string,
+        name: string,
+    },
 }
 
 const initialState: DirectParticipantsInterface = {
-    senderId: "", receiverId: ""
+    sender: { id: "", username: "", name: "" },
+    receiver: { id: "", username: "", name: "" }
 };
 
 export const directParticipantsSlice = createSlice({
-    name: "users",
+    name: "directParticipants",
     initialState,
     reducers: {
         startConversation: (_state, action: PayloadAction<DirectParticipantsInterface>) => {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { Input } from "./ui/input";
 import {
@@ -14,10 +14,10 @@ import { Button } from "./ui/button";
 import { PlusIcon, Send } from "lucide-react";
 
 import { searchUserApi } from "./api/user";
-import { getUserId } from "./api/auth";
 
 import { User } from "@/lib/interfaces";
 import { startConversation } from "@/store/directParticipantsSlice";
+import { RootState } from "@/store/store";
 
 interface SearchDialogProps {
   dialogState: boolean;
@@ -28,6 +28,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
   dialogState,
   setDialogState,
 }) => {
+  const { user } = useSelector((state: RootState) => state);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -38,8 +39,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
     if (event.key == "Enter")
       await searchUserApi(searchText)
         .then((response) => {
-          console.log(response.data.data);
-          if (response.status == 200) {
+          if (response.status === 200 || response.status === 201) {
             setUsers(response.data.data);
           }
         })
@@ -48,7 +48,10 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
 
   const handleStartMessaging = (data: any) => {
     dispatch(
-      startConversation({ senderId: getUserId(), receiverId: data._id })
+      startConversation({
+        sender: { id: user._id, name: user.name, username: user.username },
+        receiver: { id: data._id, name: data.name, username: data.username },
+      })
     );
 
     navigate(`/${data._id}`);
