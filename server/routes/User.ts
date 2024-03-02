@@ -7,7 +7,6 @@ import User from '../models/User';
 import Follower from "../models/Follower";
 
 import response from "../utilities/response";
-import Conversations from '../models/Conversations';
 
 const user = Router();
 user.use(validate);
@@ -85,31 +84,6 @@ user.get("/search", async (req: Request, res: Response) => {
         return res.status(500).json(response.SYSTEM_ERROR);
     }
 });
-
-user.get("/recents", async (req: Request, res: Response) => {
-    try {
-        const conversations = await Conversations.find({
-            participants: res.locals.user_id
-        }).populate('participants', 'username')
-            .populate({
-                path: 'lastMessage',
-                select: 'text createdAt',
-                populate: {
-                    path: 'user',
-                    model: 'User',
-                    select: 'username profile_img',
-                },
-            })
-            .sort({ 'updatedAt': -1 });
-
-        if (conversations.length !== 0) {
-            return res.status(200).json(response.OK(conversations));
-        }
-        return res.status(404).json(response.NOT_FOUND);
-    } catch (error) {
-        return res.status(500).json(response.SYSTEM_ERROR);
-    }
-})
 
 export default user;
 

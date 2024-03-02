@@ -30,7 +30,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   const [userProfile, setUserProfile] = useState<any>({});
   const [messages, setMessages] = useState<MessageType[]>([]);
 
-  const handleMessages = async () => {
+  const handleMessagesApi = async () => {
     await getMessageApi({
       senderId: directParticipants.sender.id,
       receiverId: directParticipants.receiver.id,
@@ -39,17 +39,21 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
         setMessages(response.data.data);
       }
 
-      let room = response.data.data[0].room
+      let newRoom = response.data.data[0]?.room
         ? response.data.data[0].room
         : `dm-${directParticipants.sender.id}-${directParticipants.receiver.id}`;
-      dispatch(setRoom({ id: room }));
-
-      if (socket.socket)
-        startChat({
-          socket: socket.socket,
-          room,
-        });
+      console.log(newRoom);
+      dispatch(setRoom({ id: newRoom }));
+      connectToRoom(newRoom);
     });
+  };
+
+  const connectToRoom = (room: string) => {
+    if (socket.socket)
+      startChat({
+        socket: socket.socket,
+        room,
+      });
   };
 
   const handleUserProfile = async () => {
@@ -59,8 +63,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
         .catch((error) => console.log(error));
   };
 
-  const handleReceiveMessage = (data: MessageType) => {
-    console.log(data);
+  const handleSocketMessage = (data: MessageType) => {
     setMessages((state) => [
       ...state,
       {
@@ -76,24 +79,23 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
 
   useEffect(() => {
     if (user) {
-      handleMessages();
+      handleMessagesApi();
       handleUserProfile();
     }
   }, [directParticipants]);
 
   useEffect(() => {
-    if (socket.socket) socket.socket.on("receive_chat", handleReceiveMessage);
+    if (socket.socket) socket.socket.on("receive_chat", handleSocketMessage);
     return () => {
-      if (socket.socket)
-        socket.socket.off("receive_chat", handleReceiveMessage);
+      if (socket.socket) socket.socket.off("receive_chat", handleSocketMessage);
     };
   }, [socket]);
 
   return (
     <div className="flex gap-6 h-[700px]">
-      <div className="w-1/4 h-full">
+      {/* <div className="w-1/4 h-full">
         <Recents />
-      </div>
+      </div> */}
 
       <div className="w-full p-4 rounded-sm dark:bg-neutral-950 bg-neutral-100 relative">
         <div className="absolute top-0 left-0 border-b border-muted p-2 w-full z-10 backdrop-blur-sm">
@@ -122,7 +124,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
         </div>
         {user ? (
           <>
-            <ScrollArea className="h-[620px] w-full pe-4">
+            <ScrollArea className="h-[630px] w-full pe-4 pt-10">
               <div className="flex flex-col gap-2 w-full">
                 {messages &&
                   messages.map((message, index) => (

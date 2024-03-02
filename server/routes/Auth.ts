@@ -67,7 +67,7 @@ auth.post("/verify", async (req: Request, res: Response) => {
         if (user && user[0].otp === parseInt(otp)) {
             const updateUser = await User.findOneAndUpdate({ email: email }, { $set: { is_verified: true } }, { new: true }).exec()
             const token = jwt.sign(
-                { user_id: user._id, time: new Date().getTime() },
+                { user_id: user[0]._id, time: new Date().getTime() },
                 process.env.SECRET_KEY_AUTH || '',
                 { expiresIn: '1d' }
             );
