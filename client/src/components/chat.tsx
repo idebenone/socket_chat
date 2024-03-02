@@ -34,18 +34,21 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
     await getMessageApi({
       senderId: directParticipants.sender.id,
       receiverId: directParticipants.receiver.id,
-    }).then((response) => {
-      if (response.status === 200 || response.status === 201) {
-        setMessages(response.data.data);
-      }
-
-      let newRoom = response.data.data[0]?.room
-        ? response.data.data[0].room
-        : `dm-${directParticipants.sender.id}-${directParticipants.receiver.id}`;
-      console.log(newRoom);
-      dispatch(setRoom({ id: newRoom }));
-      connectToRoom(newRoom);
-    });
+    })
+      .then((response) => {
+        let newRoom = "";
+        if (response.status === 200 || response.status === 201) {
+          if (response.data.data.length !== 0) {
+            setMessages(response.data.data);
+            newRoom = response.data.data[0].room;
+          } else {
+            newRoom = `dm-${directParticipants.sender.id}-${directParticipants.receiver.id}`;
+          }
+          dispatch(setRoom({ id: newRoom }));
+          connectToRoom(newRoom);
+        }
+      })
+      .catch((error) => console.log(error));
   };
 
   const connectToRoom = (room: string) => {

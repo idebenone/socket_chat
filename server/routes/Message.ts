@@ -12,14 +12,20 @@ message.get("/:senderId/:receiverId", async (req: Request, res: Response) => {
     try {
         const messages = await Message.find({
             $or: [
-                { participants: { $elemMatch: { user: senderId, role: 'sender' } } },
-                { participants: { $elemMatch: { user: senderId, role: 'receiver' } } },
-                { participants: { $elemMatch: { user: receiverId, role: 'sender' } } },
-                { participants: { $elemMatch: { user: receiverId, role: 'receiver' } } }
+                {
+                    $and: [
+                        { participants: { $elemMatch: { user: senderId, role: 'sender' } } },
+                        { participants: { $elemMatch: { user: receiverId, role: 'receiver' } } }
+                    ]
+                },
+                {
+                    $and: [
+                        { participants: { $elemMatch: { user: senderId, role: 'receiver' } } },
+                        { participants: { $elemMatch: { user: receiverId, role: 'sender' } } }
+                    ]
+                }
             ]
         }).select({ 'participants.user': 1, message: 1, room: 1, created_at: 1, modified_at: 1, _id: 0 }).sort({ created_at: 1 });
-
-        if (!messages) return res.status(404).json(response.NOT_FOUND);
         return res.status(200).json(response.OK(messages));
     } catch (error) {
         return res.status(501).json(response.SYSTEM_ERROR);
