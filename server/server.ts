@@ -1,12 +1,14 @@
 import express, { Express } from 'express';
 import mongoose, { ConnectOptions } from 'mongoose';
+import { Server } from "socket.io";
 import cors from "cors";
 import morgan from "morgan";
 import http from "http";
 import path from 'path';
-import auth from "./routes/Auth";
 
-import { Server } from "socket.io";
+import auth from "./routes/Auth";
+import user from "./routes/User";
+import message from "./routes/Message";
 import { saveMessage } from './services/messageService';
 
 const app: Express = express();
@@ -34,60 +36,39 @@ mongoose.connect(DB_URI, options).then(() => {
     console.log(error);
 })
 
-let chatRoom = '';
-let allUsers: any[] = [];
-
 io.on("connection", (socket) => {
-    socket.on('join_room', (data) => {
-        const { username, room } = data;
-        socket.join(room);
-        let __createdtime__ = Date.now();
-        socket.to(room).emit('receive_message', {
-            message: `${username} has joined the chat room`,
-            username: "CHAT_BOT",
-            __createdtime__
-        })
-        socket.emit('receive_message', {
-            message: `Welcome ${username}`,
-            username: "CHAT_BOT",
-            __createdtime__,
-        });
-        chatRoom = room;
-        allUsers.push({ id: socket.id, username, room });
-        const chatRoomUsers = allUsers.filter((user) => user.room === room);
-        socket.to(room).emit('chatroom_users', chatRoomUsers);
-        socket.emit('chatroom_users', chatRoomUsers);
+    let query = socket.handshake.query;
+
+    socket.on(`send-notifications-${query.user}`, (data) => {
+        io.emit(`receive-notifications-${data.receiver}`, data);
     })
 
-    socket.on("private", (data) => {
-        const { user, room } = data;
+    socket.on('start_chat', (data) => {
+        const { room } = data;
+        console.log(`${room} is in session`)
         socket.join(room);
     })
 
-    socket.on("send_message", async (data) => {
-        const { message, username, room, liked } = data;
-        io.in(room).emit('receive_message', data);
-        await saveMessage(data);
+    socket.on("send_chat", async (data) => {
+        const { message, senderId, receiverId, room, parent } = data;
+        let newMessage = {
+            message: data.message,
+            participants: [{ user: data.senderId }, { user: data.receiverId }],
+            room: data.room,
+            parent: data.parent,
+            created_at: new Date().toISOString(),
+            modified_at: new Date().toISOString()
+        }
+        await saveMessage({ senderId, receiverId, room, message, parent });
+        io.in(room).emit('receive_chat', newMessage);
     })
-
-    socket.on('leave_room', (data) => {
-        const { username, room } = data;
-        socket.leave(room);
-        const __createdtime__ = Date.now();
-        allUsers = allUsers.filter((user) => user.username !== username);
-        socket.to(room).emit('chatroom_users', allUsers);
-        socket.to(room).emit('receive_message', {
-            username: "CHAT_BOT",
-            message: `${username} has left the chat`,
-            __createdtime__,
-        });
-        console.log(`${username} has left the chat`);
-    });
-
 })
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use("/auth", auth)
+app.use("/user", user);
+app.use("/message", message);
 
 server.listen(port, () => console.log(`⚡ | Server is running at http://localhost:${port}`));
 
