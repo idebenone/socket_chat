@@ -12,3 +12,7 @@ const getHeaders = () => {
 export const getMessageApi = async (data: { senderId: string, receiverId: string }): Promise<AxiosResponse> => {
     return await axios.get(`/api/message/${data.senderId}/${data.receiverId}`, { headers: getHeaders() });
 }
+
+export const getRecentApi = async (): Promise<AxiosResponse> => {
+    return await axios.get(`/api/message/recents`, { headers: getHeaders() });
+}

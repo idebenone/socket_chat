@@ -23,7 +23,7 @@ user.get("/profile/:id", async (req: Request, res: Response) => {
 })
 
 user.get("/follow/:id", async (req: Request, res: Response) => {
-    const currentUserId = res.locals.user_id0
+    const currentUserId = res.locals.user_id
     const userToFollowId = req.params.id;
     if (!currentUserId || !userToFollowId) return res.status(422).json(response.MISSING);
     try {

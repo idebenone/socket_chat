@@ -18,6 +18,7 @@ import { RootState } from "@/store/store";
 import { NotificationType } from "@/lib/interfaces";
 import { getProfileApi } from "@/components/api/user";
 import { setUser } from "@/store/userSlice";
+import { receiveNotifications } from "@/components/api/socket";
 
 const Home = () => {
   const { socket } = useSelector((state: RootState) => state);
@@ -32,9 +33,10 @@ const Home = () => {
   const handleLogout = () => {
     removeToken();
     navigate("/login");
+    socket.socket?.disconnect();
   };
 
-  const handleReceiveNotifications = (data: NotificationType) => {
+  const handleNotifications = (data: NotificationType) => {
     toast({
       title: `Message from ${data.name}`,
       description: data.message,
@@ -63,18 +65,16 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
+    let cleanupNotificationConnection: () => void;
     if (socket.socket)
-      socket.socket.on(
-        `receive-notifications-${getUserId()}`,
-        handleReceiveNotifications
-      );
+      cleanupNotificationConnection = receiveNotifications({
+        socket: socket.socket,
+        userId: getUserId(),
+        onNotificationReceived: handleNotifications,
+      });
 
     return () => {
-      if (socket.socket)
-        socket.socket.off(
-          `receive-notifications-${getUserId()}`,
-          handleReceiveNotifications
-        );
+      cleanupNotificationConnection ? cleanupNotificationConnection() : null;
     };
   }, [socket]);
 

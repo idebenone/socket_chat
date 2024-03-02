@@ -7,7 +7,7 @@ import { setRoom } from "@/store/roomSlice";
 import { MessageType } from "@/lib/interfaces";
 
 import { getMessageApi } from "./api/message";
-import { startChat } from "./api/socket";
+import { receiveChat, startChat } from "./api/socket";
 
 import Recents from "./recents";
 import SendMessage from "./sendMessage";
@@ -24,9 +24,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   const { socket, directParticipants } = useSelector(
     (state: RootState) => state
   );
-
   const dispatch = useDispatch();
-
   const [userProfile, setUserProfile] = useState<any>({});
   const [messages, setMessages] = useState<MessageType[]>([]);
 
@@ -60,10 +58,9 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   };
 
   const handleUserProfile = async () => {
-    if (user)
-      await getProfileApi(user)
-        .then((response) => setUserProfile(response.data.data))
-        .catch((error) => console.log(error));
+    await getProfileApi(directParticipants.receiver.id)
+      .then((response) => setUserProfile(response.data.data))
+      .catch((error) => console.log(error));
   };
 
   const handleSocketMessage = (data: MessageType) => {
@@ -88,45 +85,50 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   }, [directParticipants]);
 
   useEffect(() => {
-    if (socket.socket) socket.socket.on("receive_chat", handleSocketMessage);
+    let cleanupMessageConnection: () => void;
+    if (socket.socket)
+      cleanupMessageConnection = receiveChat({
+        socket: socket.socket,
+        onMessageReceived: handleSocketMessage,
+      });
     return () => {
-      if (socket.socket) socket.socket.off("receive_chat", handleSocketMessage);
+      cleanupMessageConnection ? cleanupMessageConnection() : null;
     };
   }, [socket]);
 
   return (
     <div className="flex gap-6 h-[700px]">
-      {/* <div className="w-1/4 h-full">
+      <div className="w-1/4 h-full">
         <Recents />
-      </div> */}
+      </div>
 
       <div className="w-full p-4 rounded-sm dark:bg-neutral-950 bg-neutral-100 relative">
-        <div className="absolute top-0 left-0 border-b border-muted p-2 w-full z-10 backdrop-blur-sm">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-sm">{userProfile.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {userProfile.username}
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
-                <PhoneCall className="h-4 w-4" />
-              </span>
-
-              <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
-                <VideoIcon className="h-4 w-4" />
-              </span>
-
-              <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
-                <Info className="h-4 w-4" />
-              </span>
-            </div>
-          </div>
-        </div>
         {user ? (
           <>
+            <div className="absolute top-0 left-0 border-b border-muted p-2 w-full z-10 backdrop-blur-sm">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-sm">{userProfile.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {userProfile.username}
+                  </p>
+                </div>
+
+                <div className="flex gap-2">
+                  <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
+                    <PhoneCall className="h-4 w-4" />
+                  </span>
+
+                  <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
+                    <VideoIcon className="h-4 w-4" />
+                  </span>
+
+                  <span className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50">
+                    <Info className="h-4 w-4" />
+                  </span>
+                </div>
+              </div>
+            </div>
             <ScrollArea className="h-[630px] w-full pe-4 pt-10">
               <div className="flex flex-col gap-2 w-full">
                 {messages &&
