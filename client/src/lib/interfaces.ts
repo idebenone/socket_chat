@@ -16,17 +16,12 @@ export interface NotificationType {
   message: string,
 }
 
-export interface UserType {
-  id: string;
-  username: string;
-  room: string;
-}
-
 export interface User {
   _id: string,
   email: string,
   name: string,
   username: string,
+  profile_img: string,
   followers_count: number,
   following_count: number,
   created_at: string,

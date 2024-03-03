@@ -122,16 +122,25 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
         <>
           <div className="p-2 w-full z-10 backdrop-blur-sm border rounded-md">
             <div className="flex justify-between items-center">
-              <div className="flex gap-6 items-center">
+              <div className="flex gap-4 items-center">
                 <ArrowLeft
                   className="h-4 w-4 cursor-pointer"
                   onClick={navigateBack}
                 />
-                <div>
-                  <p className="text-sm">{userProfile.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {userProfile.username}
-                  </p>
+                <div className="flex gap-4 items-center">
+                  <img
+                    src={userProfile.profile_img}
+                    alt={userProfile.username}
+                    height="40"
+                    width="40"
+                    className="border border-muted rounded-full"
+                  />
+                  <div>
+                    <p className="text-sm">{userProfile.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {userProfile.username}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -154,6 +163,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
           <div
             ref={chatAreaRef}
             className="p-2 overflow-auto h-[700px] w-full border rounded-md"
+            id="chat"
           >
             <div className="flex flex-col gap-2 w-full p-2">
               {messages &&

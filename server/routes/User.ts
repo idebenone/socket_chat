@@ -1,12 +1,23 @@
 import { Router, Request, Response } from 'express';
 import { Types } from 'mongoose';
+import multer from 'multer';
 
 import { validate } from "../middleware/token";
-
 import User from '../models/User';
 import Follower from "../models/Follower";
-
 import response from "../utilities/response";
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, './uploads');
+    },
+    filename: (req, file, cb) => {
+        const originalName = file.originalname + Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, originalName);
+    }
+});
+const upload = multer({ storage: storage });
 
 const user = Router();
 user.use(validate);
@@ -19,6 +30,19 @@ user.get("/profile/:id", async (req: Request, res: Response) => {
         return res.status(404).json(response.NOT_FOUND);
     } catch (error) {
         return res.status(501).json(response.SYSTEM_ERROR);
+    }
+})
+
+user.post("/upload", upload.single('file'), async (req: Request, res: Response) => {
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            res.locals.user_id,
+            { profile_img: req.file ? req.protocol + '://' + req.get('host') + '/uploads/' + req.file.filename : undefined }
+        ).exec();
+        res.status(201).json(response.CREATED);
+    } catch (error) {
+        console.error("Error creating a new post:", error);
+        res.status(501).json(response.SYSTEM_ERROR);
     }
 })
 

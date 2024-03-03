@@ -21,7 +21,7 @@ const userSchema = new Schema<User>({
     password: { type: String, required: true, trim: true },
     is_verified: { type: Boolean, default: false },
     otp: { type: Number, trim: true },
-    profile_img: { type: String },
+    profile_img: { type: String, default: "" },
     followers_count: { type: Number, default: 0 },
     following_count: { type: Number, default: 0 },
     created_at: { type: Date, default: Date.now },

@@ -13,6 +13,15 @@ export const getProfileApi = async (id: string): Promise<AxiosResponse> => {
     return await axios.get(`/api/user/profile/${id}`, { headers: getHeaders() });
 }
 
+export const profileImageApi = async (data: any): Promise<AxiosResponse> => {
+    return await axios.post(`/api/user/upload`, data, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+            "x-access-token": getToken().toString(),
+        }
+    })
+}
+
 export const followUserApi = async (id: string): Promise<AxiosResponse> => {
     return await axios.get(`/api/user/follow/${id}`, { headers: getHeaders() });
 }

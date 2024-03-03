@@ -60,9 +60,12 @@ const Home = () => {
   };
 
   useEffect(() => {
-    handleSocketConnection();
-    handleUserProfile();
-    if (!getToken()) navigate("/login");
+    if (!getToken()) {
+      navigate("/login");
+    } else {
+      handleUserProfile();
+      handleSocketConnection();
+    }
   }, []);
 
   useEffect(() => {
