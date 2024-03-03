@@ -35,14 +35,10 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>
-      <div className="p-12 h-full">
-        <div className="border rounded-sm p-6 dark:bg-zinc-900 bg-zinc-150 h-full">
-          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-            <RouterProvider router={router} />
-            <Toaster />
-          </ThemeProvider>
-        </div>
-      </div>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <RouterProvider router={router} />
+        <Toaster />
+      </ThemeProvider>
     </Provider>
   </React.StrictMode>
 );

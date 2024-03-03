@@ -41,7 +41,7 @@ const SendMessage = () => {
   };
   return (
     <>
-      <div className="flex gap-2 p-2 absolute right-0 bottom-0 w-full">
+      <div className="flex gap-2 w-full">
         <Input
           placeholder="Type your message"
           onChange={(e) => setMessage(e.target.value)}

@@ -6,7 +6,6 @@ import { Input } from "./ui/input";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -62,11 +61,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
       <Dialog open={dialogState} onOpenChange={setDialogState}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
-            </DialogDescription>
+            <DialogTitle>Search your enemies and friends</DialogTitle>
           </DialogHeader>
           <Input
             placeholder="Search user"

@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Link, useNavigate } from "react-router-dom";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,13 +13,11 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
+import { useToast } from "@/components/ui/use-toast";
 import { EyeClosedIcon } from "@radix-ui/react-icons";
+
 import { Eye, LogIn } from "lucide-react";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { getToken, loginApi, setToken } from "@/components/api/auth";
-import { Link, useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   username: z.string().min(2).max(50),
@@ -23,7 +26,7 @@ const formSchema = z.object({
 
 const Login = () => {
   const navigate = useNavigate();
-
+  const { toast } = useToast();
   const [visible, setVisible] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,7 +45,13 @@ const Login = () => {
           navigate("/");
         }
       })
-      .catch((error) => console.log(error));
+      .catch(() => {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Invalid credentials",
+        });
+      });
   };
 
   useEffect(() => {
@@ -54,7 +63,7 @@ const Login = () => {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4 w-1/3 lg:w-1/6"
+          className="flex flex-col gap-4 w-3/6 md:w-1/3 lg:w-1/5"
         >
           <FormField
             control={form.control}

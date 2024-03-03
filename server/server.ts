@@ -45,7 +45,6 @@ io.on("connection", (socket) => {
 
     socket.on('start_chat', (data) => {
         const { room } = data;
-        console.log(`${room} is in session`)
         socket.join(room);
     })
 

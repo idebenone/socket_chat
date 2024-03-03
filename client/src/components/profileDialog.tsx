@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -20,11 +19,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
       <Dialog open={dialogState} onOpenChange={setDialogState}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
-            </DialogDescription>
+            <DialogTitle>Your Profile</DialogTitle>
           </DialogHeader>
         </DialogContent>
       </Dialog>

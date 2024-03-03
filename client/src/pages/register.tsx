@@ -73,7 +73,7 @@ const Register = () => {
   return (
     <div className="flex justify-center items-center w-full h-full">
       {state ? (
-        <div className="flex flex-col gap-4 w-1/3 lg:w-1/6">
+        <div className="flex flex-col gap-4 w-3/6 md:w-1/3 lg:w-1/5">
           <Input
             placeholder="Enter OTP"
             max="6"
@@ -88,7 +88,7 @@ const Register = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleRegisterApi)}
-            className="flex flex-col gap-4 w-1/3 lg:w-1/6"
+            className="flex flex-col gap-4 w-3/6 md:w-1/3 lg:w-1/5"
           >
             <FormField
               control={form.control}

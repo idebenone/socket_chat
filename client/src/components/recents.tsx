@@ -23,6 +23,7 @@ const Recents = () => {
   };
 
   const handleStartMessaging = (data: any) => {
+    console.log(user);
     dispatch(
       startConversation({
         sender: { id: user._id, name: user.name, username: user.username },
@@ -42,12 +43,12 @@ const Recents = () => {
   }, []);
 
   return (
-    <div className="dark:bg-neutral-950 bg-neutral-100 p-4 rounded-sm h-full">
-      <Input placeholder="Search" className="mb-2" />
+    <div className=" h-full">
+      <Input placeholder="Search" className="mb-6" />
       <div className="flex flex-col gap-2">
         {recents.map((recent, index) => (
           <div
-            className="p-4 cursor-pointer bg-neutral-900 hover:bg-neutral-800 duration-500 rounded-lg"
+            className="p-4 cursor-pointer border border-muted dark:hover:bg-neutral-900 hover:bg-neutral-100 duration-500 rounded-lg"
             key={index}
             onClick={() => handleStartMessaging(recent)}
           >

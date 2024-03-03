@@ -12,7 +12,7 @@ import ProfileDialog from "@/components/profileDialog";
 import SearchDialog from "@/components/searchDialog";
 import Chat from "@/components/chat";
 
-import { getUserId, removeToken } from "@/components/api/auth";
+import { getToken, getUserId, removeToken } from "@/components/api/auth";
 import { setSocket } from "@/store/socketSlice";
 import { RootState } from "@/store/store";
 import { NotificationType } from "@/lib/interfaces";
@@ -62,6 +62,7 @@ const Home = () => {
   useEffect(() => {
     handleSocketConnection();
     handleUserProfile();
+    if (!getToken()) navigate("/login");
   }, []);
 
   useEffect(() => {
@@ -79,7 +80,7 @@ const Home = () => {
   }, [socket]);
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full px-4 md:px-12 lg:px-56 py-4">
       <div className="w-full flex justify-between items-center">
         <span
           className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50"
@@ -105,9 +106,7 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="mt-4 h-full">
-        <Chat user={user} />
-      </div>
+      <Chat user={user} />
 
       <ProfileDialog
         dialogState={profileDialogState}
