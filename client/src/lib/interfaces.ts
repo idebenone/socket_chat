@@ -1,8 +1,10 @@
 export interface MessageType {
+  _id: string,
   message: string;
   participants: [{ user: string }, { user: string }]
   room: string,
   parent: string,
+  liked: boolean,
   created_at: Date;
   modified_at: Date;
 }

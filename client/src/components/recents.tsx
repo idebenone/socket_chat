@@ -52,8 +52,24 @@ const Recents = () => {
             key={index}
             onClick={() => handleStartMessaging(recent)}
           >
-            <p className="font-bold">{recent.user.name}</p>
-            <p className="text-muted-foreground">{recent.message}</p>
+            <div className="flex gap-4 items-center">
+              <img
+                src={recent.user.profile_img}
+                alt="Profile Image"
+                className="rounded-full"
+                height="50"
+                width="50"
+              />
+              <div>
+                <p className="font-bold">{recent.user.name}</p>
+                <p
+                  className="text-muted-foreground line-clamp-1 text-sm"
+                  title={recent.message}
+                >
+                  {recent.message}
+                </p>
+              </div>
+            </div>
           </div>
         ))}
       </div>

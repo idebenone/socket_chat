@@ -26,7 +26,7 @@ message.get("/:senderId/:receiverId", async (req: Request, res: Response) => {
                     ]
                 }
             ]
-        }).select({ 'participants.user': 1, message: 1, room: 1, created_at: 1, modified_at: 1, _id: 0 }).sort({ created_at: 1 });
+        }).select({ 'participants.user': 1, message: 1, room: 1, created_at: 1, modified_at: 1, _id: 1, liked: 1, parent: 1 }).sort({ created_at: 1 });
         return res.status(200).json(response.OK(messages));
     } catch (error) {
         return res.status(501).json(response.SYSTEM_ERROR);
@@ -83,6 +83,21 @@ message.get("/recents", async (req: Request, res: Response) => {
         res.status(200).json(response.OK(recentMessages));
 
     } catch (error) {
+        return res.status(501).json(response.SYSTEM_ERROR);
+    }
+})
+
+message.get("/", async (req: Request, res: Response) => {
+    const id = req.query.id as string;
+    console.log(id);
+    if (!id) return res.status(422).json(response.MISSING);
+    try {
+        const findMessage = await Message.findById({ _id: id });
+        if (!findMessage) return res.status(404).json(response.NOT_FOUND);
+        await Message.findByIdAndUpdate(new Types.ObjectId(id), { liked: true }).exec();
+        return res.status(201).json(response.CREATED);
+    } catch (error) {
+        console.log(error);
         return res.status(501).json(response.SYSTEM_ERROR);
     }
 })

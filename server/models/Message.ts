@@ -9,7 +9,7 @@ interface Message extends Document {
     ],
     room: string,
     message: string,
-    parent: mongoose.Types.ObjectId,
+    parent: string,
     liked: boolean,
     created_at: Date,
     modified_at: Date,
@@ -24,7 +24,7 @@ const messageSchema = new Schema<Message>({
     ],
     room: { type: String, required: true },
     message: { type: String, required: true },
-    parent: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
+    parent: { type: String },
     liked: { type: Boolean, default: false },
     created_at: { type: Date, default: Date.now },
     modified_at: { type: Date, default: Date.now }
