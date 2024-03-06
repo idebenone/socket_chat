@@ -12,11 +12,13 @@ import {
 import { Button } from "./ui/button";
 import { PlusIcon, Send } from "lucide-react";
 
-import { searchUserApi } from "./api/user";
+import { followUserApi, searchUserApi } from "./api/user";
 
 import { User } from "@/lib/interfaces";
 import { startConversation } from "@/store/directParticipantsSlice";
 import { RootState } from "@/store/store";
+import { useToast } from "./ui/use-toast";
+import { AxiosError } from "axios";
 
 interface SearchDialogProps {
   dialogState: boolean;
@@ -30,6 +32,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
   const { user } = useSelector((state: RootState) => state);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { toast } = useToast();
 
   const [searchText, setSearchText] = useState<string>("");
   const [users, setUsers] = useState<User[]>([]);
@@ -38,11 +41,27 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
     if (event.key == "Enter")
       await searchUserApi(searchText)
         .then((response) => {
-          if (response.status === 200 || response.status === 201) {
-            setUsers(response.data.data);
-          }
+          setUsers(response.data.data);
         })
         .catch((error) => console.log(error));
+  };
+
+  const handleFollowUser = async (id: string, name: string) => {
+    await followUserApi(id)
+      .then(() => {
+        toast({
+          title: "Success",
+          description: `You are following ${name}`,
+        });
+      })
+      .catch((error: AxiosError) => {
+        if (error.response?.status == 422)
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: `You are already follwoing ${name}`,
+          });
+      });
   };
 
   const handleStartMessaging = (data: any) => {
@@ -70,10 +89,27 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
           />
           {users.map((val, key) => (
             <div key={key} className="flex justify-between items-center">
-              <p>{val.username}</p>
+              <div className="flex gap-4 items-center">
+                <img
+                  src={val.profile_img}
+                  alt="Profile Image"
+                  height="40"
+                  width="40"
+                  className="border border-muted rounded-full"
+                />
+                <span>
+                  <p className="font-semibold">{val.name}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {val.username}
+                  </p>
+                </span>
+              </div>
 
               <div className="flex gap-2">
-                <Button className="flex gap-4">
+                <Button
+                  className="flex gap-4"
+                  onClick={() => handleFollowUser(val._id, val.name)}
+                >
                   <p>Follow</p>
                   <PlusIcon className="h-4 w-4" />
                 </Button>

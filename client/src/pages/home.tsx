@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import io from "socket.io-client";
 
 import { LogOut, Search } from "lucide-react";
@@ -13,15 +13,15 @@ import SearchDialog from "@/components/searchDialog";
 import Chat from "@/components/chat";
 
 import { getToken, getUserId, removeToken } from "@/components/api/auth";
-import { setSocket } from "@/store/socketSlice";
-import { RootState } from "@/store/store";
 import { NotificationType } from "@/lib/interfaces";
 import { getProfileApi } from "@/components/api/user";
 import { setUser } from "@/store/userSlice";
 import { receiveNotifications } from "@/components/api/socket";
+import { useSocket } from "@/components/providers/socket-provider";
 
 const Home = () => {
-  const { socket } = useSelector((state: RootState) => state);
+  const { socket, setSocket } = useSocket();
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useParams();
@@ -29,25 +29,28 @@ const Home = () => {
 
   const [profileDialogState, setProfileDialogState] = useState<boolean>(false);
   const [searchDialogState, setSearchDialogState] = useState<boolean>(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   const handleLogout = () => {
     removeToken();
     navigate("/login");
-    socket.socket?.disconnect();
+    socket?.disconnect();
   };
 
-  const handleNotifications = (data: NotificationType) => {
-    toast({
-      title: `Message from ${data.name}`,
-      description: data.message,
-    });
+  const handleSocketNotifications = (data: NotificationType) => {
+    console.log(data.sender, user);
+    if (user !== data.sender)
+      toast({
+        title: `Message from ${data.name}`,
+        description: data.message,
+      });
   };
 
   const handleSocketConnection = () => {
     const socket = io("http://localhost:3001", {
       query: { user: getUserId() },
     });
-    dispatch(setSocket({ socket }));
+    setSocket(socket);
   };
 
   const handleUserProfile = async () => {
@@ -59,28 +62,37 @@ const Home = () => {
       .catch((error) => console.log(error));
   };
 
+  // const handleVisibilityChange = () => {
+  //   setIsVisible(!document.hidden);
+  //   alert("hi");
+  // };
+
   useEffect(() => {
     if (!getToken()) {
       navigate("/login");
     } else {
       handleUserProfile();
       handleSocketConnection();
+      // document.addEventListener("visibilitychange", handleVisibilityChange);
     }
+    // return () => {
+    //   document.removeEventListener("visibilitychange", handleVisibilityChange);
+    // };
   }, []);
 
   useEffect(() => {
     let cleanupNotificationConnection: () => void;
-    if (socket.socket)
+    if (socket)
       cleanupNotificationConnection = receiveNotifications({
-        socket: socket.socket,
+        socket,
         userId: getUserId(),
-        onNotificationReceived: handleNotifications,
+        onNotificationReceived: handleSocketNotifications,
       });
 
     return () => {
       cleanupNotificationConnection ? cleanupNotificationConnection() : null;
     };
-  }, [socket]);
+  }, [socket, user]);
 
   return (
     <div className="w-full h-full px-4 md:px-12 lg:px-56 py-4">

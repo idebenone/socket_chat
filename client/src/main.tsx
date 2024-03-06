@@ -12,16 +12,10 @@ import { Toaster } from "@/components/ui/toaster";
 import Login from "./pages/login.tsx";
 import Register from "./pages/register.tsx";
 import Home from "./pages/home.tsx";
+import Error from "./pages/error.tsx";
+import { SocketProvider } from "./components/providers/socket-provider.tsx";
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Home />,
-  },
-  {
-    path: "/:user",
-    element: <Home />,
-  },
   {
     path: "/login",
     element: <Login />,
@@ -30,14 +24,27 @@ const router = createBrowserRouter([
     path: "/register",
     element: <Register />,
   },
+  {
+    path: "/",
+    element: <Home />,
+    errorElement: <Error />,
+    children: [
+      {
+        path: "/:user",
+        element: <Home />,
+      },
+    ],
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <Provider store={store}>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <RouterProvider router={router} />
-        <Toaster />
+        <SocketProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </SocketProvider>
       </ThemeProvider>
     </Provider>
   </React.StrictMode>

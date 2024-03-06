@@ -24,7 +24,7 @@ export const receiveChat = (data: { socket: Socket, onMessageReceived: (message:
 }
 
 export const sendNotification = (data: { socket: Socket, sender: string, receiver: string, username: string, name: string, type: string, description: string, message: string }) => {
-    data.socket.emit(`send-notifications-${data.sender}`, { receiver: data.receiver, username: data.username, name: data.name, type: data.type, description: data.description, message: data.message });
+    data.socket.emit(`send-notifications-${data.sender}`, { sender: data.sender, receiver: data.receiver, username: data.username, name: data.name, type: data.type, description: data.description, message: data.message });
 }
 
 export const receiveNotifications = (data: { socket: Socket, userId: string, onNotificationReceived: (notification: NotificationType) => void }) => {

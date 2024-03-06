@@ -9,7 +9,7 @@ import { RootState } from "@/store/store";
 const Recents = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state: RootState) => state);
+  const user = useSelector((state: RootState) => state.user);
   const [recents, setRecents] = useState<any[]>([]);
 
   const handleRecentsApi = async () => {
@@ -23,7 +23,6 @@ const Recents = () => {
   };
 
   const handleStartMessaging = (data: any) => {
-    console.log(user);
     dispatch(
       startConversation({
         sender: { id: user._id, name: user.name, username: user.username },

@@ -15,22 +15,26 @@ import SendMessage from "./sendMessage";
 import { getProfileApi } from "./api/user";
 import { ArrowLeft, Info, PhoneCall, VideoIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { HeartFilledIcon } from "@radix-ui/react-icons";
+import { useSocket } from "./providers/socket-provider";
+import Message from "./message";
+import { leaveConverSation } from "@/store/directParticipantsSlice";
 
 interface ChatProps {
   user: string | undefined;
 }
 
 const Chat: React.FC<ChatProps> = ({ user }) => {
-  const { socket, directParticipants, room } = useSelector(
-    (state: RootState) => state
-  );
+  const { socket } = useSocket();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [userProfile, setUserProfile] = useState<any>({});
-  const [messages, setMessages] = useState<MessageType[]>([]);
+
+  const { directParticipants, room } = useSelector((state: RootState) => state);
+
   const chatAreaRef = useRef<HTMLDivElement | null>(null);
   const isScrolledToBottom = useRef<boolean>(true);
+
+  const [userProfile, setUserProfile] = useState<any>({});
+  const [messages, setMessages] = useState<MessageType[]>([]);
   const [parentMessage, setParentMessage] = useState<string>("");
 
   const handleMessagesApi = async () => {
@@ -57,9 +61,9 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   };
 
   const connectToRoom = (room: string) => {
-    if (socket.socket)
+    if (socket)
       startChat({
-        socket: socket.socket,
+        socket: socket,
         room,
       });
   };
@@ -67,7 +71,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   const handleUserProfile = async () => {
     await getProfileApi(directParticipants.receiver.id)
       .then((response) => setUserProfile(response.data.data))
-      .catch((error) => console.log(error));
+      .catch(() => navigate("/", { replace: true }));
   };
 
   const handleSocketMessage = (data: MessageType) => {
@@ -75,9 +79,10 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   };
 
   const navigateBack = () => {
-    navigate("/");
-    if (socket.socket) endChat(socket.socket);
+    navigate("/", { replace: true });
+    if (socket) endChat(socket);
     dispatch(leaveRoom());
+    dispatch(leaveConverSation());
     setParentMessage("");
   };
 
@@ -119,9 +124,9 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
 
   useEffect(() => {
     let cleanupMessageConnection: () => void;
-    if (socket.socket)
+    if (socket)
       cleanupMessageConnection = receiveChat({
-        socket: socket.socket,
+        socket: socket,
         onMessageReceived: handleSocketMessage,
       });
 
@@ -193,16 +198,15 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
             id="chat"
           >
             <div className="flex flex-col gap-2 w-full p-2">
-              {messages.map((message) => (
-                <MessageItem
-                  key={message._id}
+              {messages.map((message, index) => (
+                <Message
+                  key={index}
                   message={message}
                   onDoubleClick={handleLikeMessage}
                   isSender={
                     message.participants[0].user ===
                     directParticipants.sender.id
                   }
-                  profile_img={userProfile.profile_img}
                   handleParentMessage={handleParentMessage}
                 />
               ))}
@@ -212,6 +216,7 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
           <SendMessage
             onSendMessage={handleSendMessage}
             parent={parentMessage}
+            onRemoveParentMessage={() => setParentMessage("")}
           />
         </>
       ) : (
@@ -225,101 +230,4 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   );
 };
 
-const MessageItem: React.FC<{
-  message: MessageType;
-  onDoubleClick: (id: string) => void;
-  isSender: boolean;
-  profile_img: string;
-  handleParentMessage: (message: string) => void;
-}> = ({
-  message,
-  onDoubleClick,
-  isSender,
-  profile_img,
-  handleParentMessage,
-}) => {
-  const isEmoji = (character: string): boolean => {
-    const emojiRegex = /\p{Emoji}/u;
-    return emojiRegex.test(character);
-  };
-
-  return (
-    <div className={`flex ${isSender ? "justify-end" : "justify-start"}`}>
-      {isEmoji(message.message) ? (
-        <div className="flex gap-2 items-center">
-          {/* {!isSender && (
-            <div>
-              <img
-                src={profile_img}
-                height="40"
-                width="40"
-                className="rounded-full border border-muted"
-              />
-            </div>
-          )} */}
-
-          <p className="px-2"> {message.message}</p>
-        </div>
-      ) : (
-        <div className="flex gap-2 items-center">
-          {isSender && message.liked && (
-            <span>
-              <HeartFilledIcon className="text-red-600" />
-            </span>
-          )}
-          {/* 
-          {!isSender && (
-            <div>
-              <img
-                src={profile_img}
-                height="40"
-                width="40"
-                className="rounded-full border border-muted"
-              />
-            </div>
-          )} */}
-
-          <div>
-            {message.parent ? (
-              <div className="flex flex-col gap-2">
-                <p className="text-muted-foreground text-sm text-right mt-2 px-3">
-                  {message.parent}
-                </p>
-                <p
-                  className={
-                    isSender
-                      ? `dark:bg-neutral-50 bg-neutral-950 dark:text-neutral-950 text-neutral-50 text-right py-2 px-6 rounded-3xl w-fit text-sm`
-                      : `border dark:border-muted border-muted-foreground py-2 px-6 rounded-3xl w-fit text-sm`
-                  }
-                  onClick={() => handleParentMessage(message.message)}
-                  onDoubleClick={() => onDoubleClick(message._id)}
-                >
-                  {message.message}
-                </p>
-              </div>
-            ) : (
-              <p
-                className={
-                  isSender
-                    ? `dark:bg-neutral-50 bg-neutral-950 dark:text-neutral-950 text-neutral-50 text-right py-2 px-6 rounded-3xl w-fit text-sm`
-                    : `border dark:border-muted border-muted-foreground py-2 px-6 rounded-3xl w-fit text-sm`
-                }
-                onClick={() => handleParentMessage(message.message)}
-                onDoubleClick={() => onDoubleClick(message._id)}
-              >
-                {message.message}
-              </p>
-            )}
-          </div>
-
-          {!isSender && message.liked && (
-            <span>
-              <HeartFilledIcon className="text-red-600" />
-            </span>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
 export default Chat;
