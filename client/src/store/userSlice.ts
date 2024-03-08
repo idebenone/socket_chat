@@ -4,6 +4,8 @@ interface UserInterface {
     _id: string,
     name: string,
     username: string,
+    profile_img: string,
+    bio: string,
     followers_count: number
     following_count: number,
 }
@@ -12,6 +14,8 @@ const initialState: UserInterface = {
     _id: "",
     name: "",
     username: "",
+    profile_img: "",
+    bio: "",
     followers_count: 0,
     following_count: 0
 };

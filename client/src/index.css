@@ -82,3 +82,15 @@ body,
     @apply bg-background text-foreground;
   }
 }
+
+#chat::-webkit-scrollbar {
+  background-color: transparent;
+  width: 6px;
+  border-radius: 20px;
+}
+
+#chat::-webkit-scrollbar-thumb {
+  background-color: rgb(43, 43, 43);
+  border-radius: 20px;
+  cursor: pointer;
+}

@@ -14,7 +14,7 @@ export const saveMessage = async ({ senderId, receiverId, room, message, parent 
             message
         };
 
-        if (parent) messageData.parent = new Types.ObjectId(parent);
+        if (parent) messageData.parent = parent;
 
         const newMessage = new Message(messageData)
         await newMessage.save();

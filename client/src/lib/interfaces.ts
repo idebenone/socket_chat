@@ -1,8 +1,10 @@
 export interface MessageType {
+  _id: string,
   message: string;
   participants: [{ user: string }, { user: string }]
   room: string,
   parent: string,
+  liked: boolean,
   created_at: Date;
   modified_at: Date;
 }
@@ -16,17 +18,12 @@ export interface NotificationType {
   message: string,
 }
 
-export interface UserType {
-  id: string;
-  username: string;
-  room: string;
-}
-
 export interface User {
   _id: string,
   email: string,
   name: string,
   username: string,
+  profile_img: string,
   followers_count: number,
   following_count: number,
   created_at: string,

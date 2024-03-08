@@ -16,3 +16,7 @@ export const getMessageApi = async (data: { senderId: string, receiverId: string
 export const getRecentApi = async (): Promise<AxiosResponse> => {
     return await axios.get(`/api/message/recents`, { headers: getHeaders() });
 }
+
+export const likeMessageApi = async (id: string): Promise<AxiosResponse> => {
+    return await axios.get(`/api/message?like=true&id=${id}`, { headers: getHeaders() });
+}
