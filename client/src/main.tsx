@@ -14,6 +14,7 @@ import Register from "./pages/register.tsx";
 import Home from "./pages/home.tsx";
 import Error from "./pages/error.tsx";
 import { SocketProvider } from "./components/providers/socket-provider.tsx";
+import OnBoarding from "./pages/onboarding.tsx";
 
 const router = createBrowserRouter([
   {
@@ -30,10 +31,14 @@ const router = createBrowserRouter([
     errorElement: <Error />,
     children: [
       {
-        path: "/:user",
+        path: "/:id",
         element: <Home />,
       },
     ],
+  },
+  {
+    path: "/user/onboarding",
+    element: <OnBoarding />,
   },
 ]);
 

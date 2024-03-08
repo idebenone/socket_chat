@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { startConversation } from "@/store/directParticipantsSlice";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "@/store/store";
+import { getToken } from "./api/auth";
 
 const Recents = () => {
   const dispatch = useDispatch();
@@ -38,7 +39,7 @@ const Recents = () => {
   };
 
   useEffect(() => {
-    handleRecentsApi();
+    if (getToken()) handleRecentsApi();
   }, []);
 
   return (

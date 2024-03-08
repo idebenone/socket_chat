@@ -28,7 +28,10 @@ const Chat: React.FC<ChatProps> = ({ user }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { directParticipants, room } = useSelector((state: RootState) => state);
+  const directParticipants = useSelector(
+    (state: RootState) => state.directParticipants
+  );
+  const room = useSelector((state: RootState) => state.room);
 
   const chatAreaRef = useRef<HTMLDivElement | null>(null);
   const isScrolledToBottom = useRef<boolean>(true);

@@ -6,6 +6,7 @@ import morgan from "morgan";
 import http from "http";
 import path from 'path';
 
+import { validateSocketToken } from "./middleware/socketToken";
 import auth from "./routes/Auth";
 import user from "./routes/User";
 import message from "./routes/Message";
@@ -36,6 +37,16 @@ mongoose.connect(DB_URI, options).then(() => {
     console.log(error);
 })
 
+io.use(async (socket, next) => {
+    const token = socket.handshake.auth.token;
+    try {
+        const user_id = await validateSocketToken(token);
+        if (user_id !== "401") next();
+    } catch (error) {
+        console.log(error);
+    }
+})
+
 io.on("connection", (socket) => {
     let query = socket.handshake.query;
 
@@ -45,7 +56,6 @@ io.on("connection", (socket) => {
 
     socket.on('start_chat', (data) => {
         const { room } = data;
-        console.log(room);
         socket.join(room);
     })
 

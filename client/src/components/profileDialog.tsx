@@ -19,7 +19,7 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
   dialogState,
   setDialogState,
 }) => {
-  const { user } = useSelector((state: RootState) => state);
+  const user = useSelector((state: RootState) => state.user);
   const { toast } = useToast();
   const dispatch = useDispatch();
 
@@ -33,7 +33,6 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
   };
 
   const handleFileSelect = (e: any) => {
-    console.log(e.target.files?.[0]);
     const file = e.target.files?.[0];
     if (file) handleProfileImageApi(file);
   };
@@ -86,18 +85,20 @@ const ProfileDialog: React.FC<ProfileDialogProps> = ({
               />
             </div>
 
-            <div className="w-full flex flex-col gap-2">
-              <p className="text-lg">{user.name}</p>
-              <p className="text-muted-foreground">{user.username}</p>
-
+            <div className="w-full flex flex-col gap-4">
+              <div className="flex flex-col">
+                <p className="text-lg">{user.name}</p>
+                <p className="text-muted-foreground">{user.username}</p>
+              </div>
+              <p className="italic font-normal text-xs">{user.bio}</p>
               <div className="flex gap-2">
                 <span>
-                  <p className="font-medium text-muted-foreground">Followers</p>
+                  <p className="font-light text-muted-foreground">Followers</p>
                   <p>{user.followers_count}</p>
                 </span>
 
                 <span>
-                  <p className="font-medium text-muted-foreground">Following</p>
+                  <p className="font-light text-muted-foreground">Following</p>
                   <p>{user.following_count}</p>
                 </span>
               </div>

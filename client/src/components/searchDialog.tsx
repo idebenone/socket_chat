@@ -29,7 +29,7 @@ const SearchDialog: React.FC<SearchDialogProps> = ({
   dialogState,
   setDialogState,
 }) => {
-  const { user } = useSelector((state: RootState) => state);
+  const user = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { toast } = useToast();

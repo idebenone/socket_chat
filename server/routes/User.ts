@@ -22,6 +22,19 @@ const upload = multer({ storage: storage });
 const user = Router();
 user.use(validate);
 
+user.post("/onboarding", async (req: Request, res: Response) => {
+    const { username, bio } = req.body;
+    if (!username || !bio) return res.status(422).json(response.MISSING);
+    try {
+        const user = await User.findByIdAndUpdate(
+            res.locals.user_id, { username, bio }
+        )
+        return res.status(201).json(response.CREATED);
+    } catch (error) {
+        return res.status(501).json(response.SYSTEM_ERROR);
+    }
+})
+
 user.get("/profile/:id", async (req: Request, res: Response) => {
     const id = req.params.id;
     try {
@@ -39,10 +52,9 @@ user.post("/upload", upload.single('file'), async (req: Request, res: Response) 
             res.locals.user_id,
             { profile_img: req.file ? req.protocol + '://' + req.get('host') + '/uploads/' + req.file.filename : undefined }
         ).exec();
-        res.status(201).json(response.CREATED);
+        return res.status(201).json(response.CREATED);
     } catch (error) {
-        console.error("Error creating a new post:", error);
-        res.status(501).json(response.SYSTEM_ERROR);
+        return res.status(501).json(response.SYSTEM_ERROR);
     }
 })
 

@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import io from "socket.io-client";
 
 import { LogOut, Search } from "lucide-react";
-import { PersonIcon } from "@radix-ui/react-icons";
 import { useToast } from "@/components/ui/use-toast";
 
 import { ModeToggle } from "@/components/mode-toggle";
@@ -18,18 +17,17 @@ import { getProfileApi } from "@/components/api/user";
 import { setUser } from "@/store/userSlice";
 import { receiveNotifications } from "@/components/api/socket";
 import { useSocket } from "@/components/providers/socket-provider";
+import { RootState } from "@/store/store";
 
 const Home = () => {
+  const user = useSelector((state: RootState) => state.user);
   const { socket, setSocket } = useSocket();
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useParams();
+  const { id } = useParams();
   const { toast } = useToast();
-
   const [profileDialogState, setProfileDialogState] = useState<boolean>(false);
   const [searchDialogState, setSearchDialogState] = useState<boolean>(false);
-  const [isVisible, setIsVisible] = useState(true);
 
   const handleLogout = () => {
     removeToken();
@@ -38,8 +36,7 @@ const Home = () => {
   };
 
   const handleSocketNotifications = (data: NotificationType) => {
-    console.log(data.sender, user);
-    if (user !== data.sender)
+    if (id !== data.sender)
       toast({
         title: `Message from ${data.name}`,
         description: data.message,
@@ -49,6 +46,7 @@ const Home = () => {
   const handleSocketConnection = () => {
     const socket = io("http://localhost:3001", {
       query: { user: getUserId() },
+      auth: { token: getToken() },
     });
     setSocket(socket);
   };
@@ -62,22 +60,13 @@ const Home = () => {
       .catch((error) => console.log(error));
   };
 
-  // const handleVisibilityChange = () => {
-  //   setIsVisible(!document.hidden);
-  //   alert("hi");
-  // };
-
   useEffect(() => {
     if (!getToken()) {
       navigate("/login");
     } else {
       handleUserProfile();
       handleSocketConnection();
-      // document.addEventListener("visibilitychange", handleVisibilityChange);
     }
-    // return () => {
-    //   document.removeEventListener("visibilitychange", handleVisibilityChange);
-    // };
   }, []);
 
   useEffect(() => {
@@ -105,13 +94,19 @@ const Home = () => {
         </span>
 
         <div className="flex gap-2 items-center">
-          <ModeToggle />
           <span
-            className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50"
+            className="border rounded-full cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50"
             onClick={() => setProfileDialogState(true)}
           >
-            <PersonIcon className="h-4 w-4" />
+            <img
+              src={user.profile_img}
+              alt=""
+              height="34"
+              width="34"
+              className="object-cover rounded-full"
+            />
           </span>
+          <ModeToggle />
           <span
             className="border rounded-md p-2 cursor-pointer dark:hover:bg-neutral-800 hover:bg-neutral-100 dark:bg-neutral-950 bg-neutral-50"
             onClick={handleLogout}
@@ -121,7 +116,7 @@ const Home = () => {
         </div>
       </div>
 
-      <Chat user={user} />
+      <Chat user={id} />
 
       <ProfileDialog
         dialogState={profileDialogState}

@@ -24,7 +24,6 @@ import { Link, useNavigate } from "react-router-dom";
 const formSchema = z.object({
   email: z.string(),
   name: z.string(),
-  username: z.string().min(2).max(50),
   password: z.string().min(8),
 });
 
@@ -41,16 +40,22 @@ const Register = () => {
     defaultValues: {
       email: "",
       name: "",
-      username: "",
       password: "",
     },
   });
 
   const handleRegisterApi = async (values: z.infer<typeof formSchema>) => {
     setEmail(values.email);
-    await registerApi(values)
+    const newData = {
+      ...values,
+      username: Math.random().toString(),
+    };
+    console.log(newData);
+    await registerApi(newData)
       .then((response) => {
-        if (response.status == 201 || 200) setState(true);
+        if (response.status == 201 || 200) {
+          setState(true);
+        }
       })
       .catch((error) => console.log(error));
   };
@@ -60,7 +65,7 @@ const Register = () => {
       .then((response) => {
         if (response.status == 201 || 200) {
           setToken(response.data.data);
-          navigate("/");
+          navigate("/user/onboarding");
         }
       })
       .catch((error) => console.log(error));
@@ -109,18 +114,6 @@ const Register = () => {
                 <FormItem>
                   <FormControl>
                     <Input placeholder="Full Name" {...field} type="text" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input placeholder="Username" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
